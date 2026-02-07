@@ -8,10 +8,11 @@ interface BarberSpecInput {
   faceMetrics: FaceMetrics;
   answers: QuestionnaireAnswers;
   selectedCuts: ScoredHaircut[];
+  previewImages?: Record<string, string>;
 }
 
 export function generateBarberSpec(input: BarberSpecInput) {
-  const { faceShape, faceMetrics, answers, selectedCuts } = input;
+  const { faceShape, faceMetrics, answers, selectedCuts, previewImages } = input;
   const doc = new jsPDF();
   let y = 20;
 
@@ -116,8 +117,28 @@ export function generateBarberSpec(input: BarberSpecInput) {
       y += whyLines.length * 5 + 3;
     }
 
+    // AI Preview image
+    const preview = previewImages?.[cut.haircut.id];
+    if (preview) {
+      if (y > 180) {
+        doc.addPage();
+        y = 20;
+      }
+      try {
+        doc.addImage(preview, "PNG", 20, y, 60, 60);
+        doc.setFontSize(8);
+        doc.setTextColor(120, 120, 120);
+        doc.text("AI-generated preview", 22, y + 64);
+        doc.setTextColor(0, 0, 0);
+        y += 70;
+      } catch {
+        // Skip if image fails to embed
+      }
+    }
+
     // Tags
     doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
     doc.setTextColor(100, 100, 100);
     doc.text(
       `Maintenance: ${cut.haircut.maintenanceLevel}/5 | Vibes: ${cut.haircut.vibeTags.join(", ")}`,

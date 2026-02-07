@@ -83,11 +83,6 @@ export const useFlowStore = create<FlowState>()(
     }),
     {
       name: "matsnap-flow",
-      partialize: (state) => {
-        // Exclude previewImages from localStorage (too large)
-        const { previewImages: _, ...rest } = state;
-        return rest;
-      },
     }
   )
 );

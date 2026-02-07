@@ -30,8 +30,9 @@ export default function SubmitPage() {
       faceMetrics: store.faceMetrics!,
       answers: store.questionnaireAnswers!,
       selectedCuts,
+      previewImages: store.previewImages,
     });
-  }, [store.faceShape, store.faceMetrics, store.questionnaireAnswers, selectedCuts]);
+  }, [store.faceShape, store.faceMetrics, store.questionnaireAnswers, selectedCuts, store.previewImages]);
 
   const startOver = () => {
     store.reset();
@@ -100,6 +101,29 @@ export default function SubmitPage() {
               <h3 className="text-lg font-bold">{rec.haircut.name}</h3>
             </div>
             <p className="text-sm text-zinc-600">{rec.haircut.description}</p>
+            {store.previewImages[rec.haircut.id] && (
+              <div className="grid grid-cols-2 gap-3 py-2">
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-zinc-400 text-center">Current</p>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={store.selfieDataUrl!}
+                    alt="Current look"
+                    className="w-full rounded-xl object-cover aspect-square"
+                    style={{ transform: "scaleX(-1)" }}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-purple-500 text-center">AI Preview</p>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={store.previewImages[rec.haircut.id]}
+                    alt={`Preview with ${rec.haircut.name}`}
+                    className="w-full rounded-xl object-cover aspect-square"
+                  />
+                </div>
+              </div>
+            )}
             {rec.explanation && (
               <p className="text-sm text-blue-700">
                 <span className="font-semibold">Why: </span>
