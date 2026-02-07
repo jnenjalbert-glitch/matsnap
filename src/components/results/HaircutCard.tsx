@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { PreviewButton } from "./PreviewButton";
 import type { ScoredHaircut } from "@/types/haircut";
 
 interface HaircutCardProps {
@@ -56,18 +57,27 @@ export function HaircutCard({
         </div>
       )}
 
-      <div className="flex flex-wrap gap-1.5">
-        {haircut.vibeTags.map((tag) => (
-          <span
-            key={tag}
-            className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium capitalize text-zinc-600"
-          >
-            {tag}
+      <div className="flex items-center justify-between">
+        <div className="flex flex-wrap gap-1.5">
+          {haircut.vibeTags.map((tag) => (
+            <span
+              key={tag}
+              className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium capitalize text-zinc-600"
+            >
+              {tag}
+            </span>
+          ))}
+          <span className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-600">
+            Maintenance: {haircut.maintenanceLevel}/5
           </span>
-        ))}
-        <span className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-600">
-          Maintenance: {haircut.maintenanceLevel}/5
-        </span>
+        </div>
+        {!selectable && (
+          <PreviewButton
+            haircutId={haircut.id}
+            haircutName={haircut.name}
+            haircutDescription={haircut.description}
+          />
+        )}
       </div>
 
       {selectable && (

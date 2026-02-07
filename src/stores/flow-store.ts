@@ -20,6 +20,9 @@ interface FlowState {
   // Results
   recommendations: ScoredHaircut[];
 
+  // AI Preview images (haircutId -> base64 data URL)
+  previewImages: Record<string, string>;
+
   // Selections
   selectedHaircutIds: string[];
 
@@ -34,6 +37,7 @@ interface FlowState {
   ) => void;
   setQuestionnaireAnswers: (answers: QuestionnaireAnswers) => void;
   setRecommendations: (recs: ScoredHaircut[]) => void;
+  setPreviewImage: (haircutId: string, dataUrl: string) => void;
   setSelectedHaircuts: (ids: string[]) => void;
   setSubmissionId: (id: string) => void;
   reset: () => void;
@@ -46,6 +50,7 @@ const initialState = {
   faceShape: null,
   questionnaireAnswers: null,
   recommendations: [],
+  previewImages: {} as Record<string, string>,
   selectedHaircutIds: [],
   submissionId: null,
 };
@@ -64,6 +69,11 @@ export const useFlowStore = create<FlowState>()(
       setRecommendations: (recommendations) =>
         set({ recommendations, currentStep: 3 }),
 
+      setPreviewImage: (haircutId, dataUrl) =>
+        set((state) => ({
+          previewImages: { ...state.previewImages, [haircutId]: dataUrl },
+        })),
+
       setSelectedHaircuts: (selectedHaircutIds) =>
         set({ selectedHaircutIds, currentStep: 5 }),
 
@@ -73,6 +83,11 @@ export const useFlowStore = create<FlowState>()(
     }),
     {
       name: "matsnap-flow",
+      partialize: (state) => {
+        // Exclude previewImages from localStorage (too large)
+        const { previewImages: _, ...rest } = state;
+        return rest;
+      },
     }
   )
 );
