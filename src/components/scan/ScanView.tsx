@@ -7,7 +7,6 @@ import { initFaceLandmarker } from "@/lib/mediapipe/face-landmarker";
 import { computeFaceMetrics } from "@/lib/mediapipe/face-metrics";
 import { classifyFaceShape } from "@/lib/mediapipe/face-shape";
 import { useFlowStore } from "@/stores/flow-store";
-import { cn } from "@/lib/utils";
 import type { FaceMetrics, FaceShape } from "@/types/face";
 
 type Phase = "camera" | "loading" | "result";
@@ -27,7 +26,6 @@ export default function ScanView() {
 
   const setScanData = useFlowStore((s) => s.setScanData);
 
-  // Start camera + preload model
   useEffect(() => {
     let cancelled = false;
 
@@ -82,7 +80,6 @@ export default function ScanView() {
     const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
     setSelfieDataUrl(dataUrl);
 
-    // Stop camera
     streamRef.current?.getTracks().forEach((t) => t.stop());
 
     try {
@@ -149,10 +146,16 @@ export default function ScanView() {
   if (error) {
     return (
       <div className="flex flex-col items-center gap-4 py-12 text-center">
-        <div className="text-red-500 text-lg font-medium">{error}</div>
+        <div className="text-[0.95rem]" style={{ color: "var(--color-danger)" }}>{error}</div>
         <button
           onClick={retake}
-          className="px-6 py-2 bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 transition-colors"
+          className="px-6 py-2.5 rounded-[8px] text-[0.9rem] font-medium cursor-pointer transition-colors"
+          style={{
+            background: "var(--color-accent)",
+            color: "#0f0d0b",
+            border: "none",
+            fontFamily: "inherit",
+          }}
         >
           Try Again
         </button>
@@ -163,11 +166,14 @@ export default function ScanView() {
   return (
     <div className="space-y-6">
       {/* Camera / Photo view */}
-      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-black">
+      <div
+        className="relative aspect-[4/3] w-full overflow-hidden rounded-[14px]"
+        style={{ background: "#000", border: "1px solid var(--color-border-DEFAULT)" }}
+      >
         {phase === "camera" && (
           <video
             ref={videoRef}
-            className="h-full w-full object-cover mirror"
+            className="h-full w-full object-cover"
             playsInline
             muted
             style={{ transform: "scaleX(-1)" }}
@@ -185,26 +191,28 @@ export default function ScanView() {
         )}
 
         {phase === "loading" && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-            <Loader2 className="h-10 w-10 text-white animate-spin" />
+          <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+            <Loader2 className="h-10 w-10 animate-spin" style={{ color: "var(--color-accent)" }} />
           </div>
         )}
 
-        {/* Hidden canvas for capture */}
         <canvas ref={canvasRef} className="hidden" />
       </div>
 
-      {/* Actions */}
+      {/* Capture button */}
       {phase === "camera" && (
         <button
           onClick={capture}
           disabled={!modelReady}
-          className={cn(
-            "w-full flex items-center justify-center gap-2 py-3 rounded-xl font-medium transition-colors",
-            modelReady
-              ? "bg-zinc-900 text-white hover:bg-zinc-800"
-              : "bg-zinc-300 text-zinc-500 cursor-not-allowed"
-          )}
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-[8px] text-[0.9rem] font-medium cursor-pointer transition-colors"
+          style={{
+            background: modelReady ? "var(--color-accent)" : "var(--color-bg-raised)",
+            color: modelReady ? "#0f0d0b" : "var(--color-text-faint)",
+            border: "none",
+            fontFamily: "inherit",
+            opacity: modelReady ? 1 : 0.6,
+            pointerEvents: modelReady ? "auto" : "none",
+          }}
         >
           <Camera className="h-5 w-5" />
           {modelReady ? "Take Photo" : "Loading face model..."}
@@ -214,36 +222,67 @@ export default function ScanView() {
       {/* Results */}
       {phase === "result" && shape && metrics && (
         <>
-          <div className="rounded-2xl border border-zinc-200 p-5 space-y-3">
-            <div className="text-sm text-zinc-500">Your face shape</div>
-            <div className="text-3xl font-bold">{SHAPE_LABELS[shape]}</div>
+          <div
+            className="rounded-[14px] p-5 space-y-3"
+            style={{
+              background: "var(--color-bg-card)",
+              border: "1px solid var(--color-border-DEFAULT)",
+            }}
+          >
+            <div className="text-[0.85rem]" style={{ color: "var(--color-text-muted)" }}>
+              Your face shape
+            </div>
+            <div
+              className="text-[2rem]"
+              style={{ fontFamily: "var(--font-instrument-serif), var(--font-display)", fontWeight: 400 }}
+            >
+              {SHAPE_LABELS[shape]}
+            </div>
             <div className="grid grid-cols-3 gap-3 text-sm">
-              <div className="rounded-lg bg-zinc-50 p-3 text-center">
-                <div className="text-zinc-400">L/W</div>
-                <div className="font-semibold">{metrics.faceLengthToWidthRatio.toFixed(2)}</div>
-              </div>
-              <div className="rounded-lg bg-zinc-50 p-3 text-center">
-                <div className="text-zinc-400">Jaw/Cheek</div>
-                <div className="font-semibold">{metrics.jawToCheekboneRatio.toFixed(2)}</div>
-              </div>
-              <div className="rounded-lg bg-zinc-50 p-3 text-center">
-                <div className="text-zinc-400">Fhd/Cheek</div>
-                <div className="font-semibold">{metrics.foreheadToCheekboneRatio.toFixed(2)}</div>
-              </div>
+              {[
+                { label: "L/W", value: metrics.faceLengthToWidthRatio.toFixed(2) },
+                { label: "Jaw/Cheek", value: metrics.jawToCheekboneRatio.toFixed(2) },
+                { label: "Fhd/Cheek", value: metrics.foreheadToCheekboneRatio.toFixed(2) },
+              ].map((item) => (
+                <div
+                  key={item.label}
+                  className="rounded-[8px] p-3 text-center"
+                  style={{ background: "var(--color-bg-raised)", border: "1px solid var(--color-border-DEFAULT)" }}
+                >
+                  <div className="text-[0.72rem] uppercase tracking-wide" style={{ color: "var(--color-text-faint)" }}>
+                    {item.label}
+                  </div>
+                  <div className="font-semibold text-[0.9rem]" style={{ color: "var(--color-text-secondary)" }}>
+                    {item.value}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
           <div className="flex gap-3">
             <button
               onClick={retake}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-zinc-300 font-medium hover:bg-zinc-50 transition-colors"
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-[8px] font-medium cursor-pointer transition-colors"
+              style={{
+                background: "var(--color-bg-card)",
+                color: "var(--color-text-secondary)",
+                border: "1px solid var(--color-border-DEFAULT)",
+                fontFamily: "inherit",
+              }}
             >
               <RotateCcw className="h-4 w-4" />
               Retake
             </button>
             <button
               onClick={proceed}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-zinc-900 text-white font-medium hover:bg-zinc-800 transition-colors"
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-[8px] font-medium cursor-pointer transition-colors"
+              style={{
+                background: "var(--color-accent)",
+                color: "#0f0d0b",
+                border: "none",
+                fontFamily: "inherit",
+              }}
             >
               Continue
               <ArrowRight className="h-4 w-4" />

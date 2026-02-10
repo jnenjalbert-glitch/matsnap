@@ -9,7 +9,8 @@ import type { ScoredHaircut } from "@/types/haircut";
 interface FlowState {
   currentStep: number;
 
-  // Scan
+  // Photos
+  photosUploaded: boolean;
   selfieDataUrl: string | null;
   faceMetrics: FaceMetrics | null;
   faceShape: FaceShape | null;
@@ -30,6 +31,7 @@ interface FlowState {
   submissionId: string | null;
 
   // Actions
+  setPhotosComplete: (selfieDataUrl: string | null) => void;
   setScanData: (
     selfieDataUrl: string,
     metrics: FaceMetrics,
@@ -45,6 +47,7 @@ interface FlowState {
 
 const initialState = {
   currentStep: 1,
+  photosUploaded: false,
   selfieDataUrl: null,
   faceMetrics: null,
   faceShape: null,
@@ -60,8 +63,11 @@ export const useFlowStore = create<FlowState>()(
     (set) => ({
       ...initialState,
 
+      setPhotosComplete: (selfieDataUrl) =>
+        set({ photosUploaded: true, selfieDataUrl, currentStep: 2 }),
+
       setScanData: (selfieDataUrl, faceMetrics, faceShape) =>
-        set({ selfieDataUrl, faceMetrics, faceShape, currentStep: 2 }),
+        set({ selfieDataUrl, faceMetrics, faceShape, photosUploaded: true, currentStep: 2 }),
 
       setQuestionnaireAnswers: (questionnaireAnswers) =>
         set({ questionnaireAnswers, currentStep: 3 }),
@@ -83,6 +89,12 @@ export const useFlowStore = create<FlowState>()(
     }),
     {
       name: "matsnap-flow",
+      partialize: (state) => ({
+        ...state,
+        // Don't persist large image data
+        previewImages: {},
+        selfieDataUrl: null,
+      }),
     }
   )
 );

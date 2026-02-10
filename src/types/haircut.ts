@@ -1,5 +1,7 @@
 import type { FaceShape } from "./face";
 
+export type HairLength = "very_short" | "short" | "medium" | "long" | "very_long";
+
 export interface Haircut {
   id: string;
   name: string;
@@ -12,6 +14,7 @@ export interface Haircut {
   hairTypeMatches: string[];
   avoidFaceShapes: FaceShape[];
   avoidHairTypes: string[];
+  lengthCompatibility: HairLength[];
   maintenanceLevel: number;
   vibeTags: string[];
 }

@@ -4,8 +4,8 @@ import type { QuestionnaireAnswers } from "@/types/questionnaire";
 import type { ScoredHaircut } from "@/types/haircut";
 
 interface BarberSpecInput {
-  faceShape: FaceShape;
-  faceMetrics: FaceMetrics;
+  faceShape: FaceShape | null;
+  faceMetrics: FaceMetrics | null;
   answers: QuestionnaireAnswers;
   selectedCuts: ScoredHaircut[];
   previewImages?: Record<string, string>;
@@ -29,31 +29,33 @@ export function generateBarberSpec(input: BarberSpecInput) {
   doc.setTextColor(0, 0, 0);
   y += 16;
 
-  // Face Profile Section
-  doc.setFontSize(16);
-  doc.setFont("helvetica", "bold");
-  doc.text("Face Profile", 20, y);
-  y += 10;
-
-  doc.setFontSize(11);
-  doc.setFont("helvetica", "normal");
-
-  const profile = [
-    ["Face Shape", faceShape.charAt(0).toUpperCase() + faceShape.slice(1)],
-    ["Length/Width Ratio", faceMetrics.faceLengthToWidthRatio.toFixed(2)],
-    ["Jaw/Cheekbone Ratio", faceMetrics.jawToCheekboneRatio.toFixed(2)],
-    ["Forehead/Cheekbone Ratio", faceMetrics.foreheadToCheekboneRatio.toFixed(2)],
-  ];
-
-  for (const [label, value] of profile) {
+  // Face Profile Section (only if face scan data exists)
+  if (faceShape && faceMetrics) {
+    doc.setFontSize(16);
     doc.setFont("helvetica", "bold");
-    doc.text(`${label}:`, 20, y);
-    doc.setFont("helvetica", "normal");
-    doc.text(value, 85, y);
-    y += 7;
-  }
+    doc.text("Face Profile", 20, y);
+    y += 10;
 
-  y += 8;
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "normal");
+
+    const profile = [
+      ["Face Shape", faceShape.charAt(0).toUpperCase() + faceShape.slice(1)],
+      ["Length/Width Ratio", faceMetrics.faceLengthToWidthRatio.toFixed(2)],
+      ["Jaw/Cheekbone Ratio", faceMetrics.jawToCheekboneRatio.toFixed(2)],
+      ["Forehead/Cheekbone Ratio", faceMetrics.foreheadToCheekboneRatio.toFixed(2)],
+    ];
+
+    for (const [label, value] of profile) {
+      doc.setFont("helvetica", "bold");
+      doc.text(`${label}:`, 20, y);
+      doc.setFont("helvetica", "normal");
+      doc.text(value, 85, y);
+      y += 7;
+    }
+
+    y += 8;
+  }
 
   // Hair Profile Section
   doc.setFontSize(16);

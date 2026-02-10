@@ -1,51 +1,57 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-
 const STEPS = [
-  { label: "Scan", path: "/scan" },
-  { label: "Questions", path: "/questions" },
-  { label: "Results", path: "/results" },
-  { label: "Choose", path: "/choose" },
-  { label: "Summary", path: "/submit" },
+  { label: "Photos", num: 1 },
+  { label: "Questions", num: 2 },
+  { label: "Styles", num: 3 },
+  { label: "Confirm", num: 4 },
 ];
 
 export function ProgressBar({ currentStep }: { currentStep: number }) {
   return (
-    <div className="flex items-center justify-between gap-2 px-4 py-3">
+    <div className="flex items-center justify-center gap-1.5 py-7">
       {STEPS.map((step, i) => {
-        const stepNum = i + 1;
-        const isActive = stepNum === currentStep;
-        const isComplete = stepNum < currentStep;
+        const isDone = step.num < currentStep;
+        const isActive = step.num === currentStep;
 
         return (
-          <div key={step.path} className="flex items-center gap-2 flex-1">
-            <div className="flex flex-col items-center gap-1 flex-1">
+          <div key={step.num} className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5">
               <div
-                className={cn(
-                  "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors",
-                  isComplete && "bg-emerald-500 text-white",
-                  isActive && "bg-zinc-900 text-white",
-                  !isComplete && !isActive && "bg-zinc-200 text-zinc-500"
-                )}
+                className="w-8 h-8 rounded-full flex items-center justify-center text-[0.8rem] font-semibold transition-all"
+                style={{
+                  background: isActive
+                    ? "var(--color-accent)"
+                    : isDone
+                    ? "var(--color-accent-dim)"
+                    : "var(--color-bg-raised)",
+                  color: isActive
+                    ? "#fff"
+                    : isDone
+                    ? "var(--color-accent)"
+                    : "var(--color-text-faint)",
+                  boxShadow: isActive ? "0 0 20px rgba(139,92,246,0.25)" : "none",
+                }}
               >
-                {isComplete ? "✓" : stepNum}
+                {isDone ? "✓" : step.num}
               </div>
               <span
-                className={cn(
-                  "text-xs",
-                  isActive ? "font-semibold text-zinc-900" : "text-zinc-400"
-                )}
+                className="text-[0.75rem]"
+                style={{
+                  color: isActive ? "var(--color-accent)" : "var(--color-text-muted)",
+                  fontWeight: isActive ? 500 : 400,
+                }}
               >
                 {step.label}
               </span>
             </div>
             {i < STEPS.length - 1 && (
               <div
-                className={cn(
-                  "h-0.5 flex-1 -mt-5",
-                  isComplete ? "bg-emerald-500" : "bg-zinc-200"
-                )}
+                className="w-8 h-px"
+                style={{
+                  background: isDone ? "var(--color-accent)" : "var(--color-border-DEFAULT)",
+                  opacity: isDone ? 0.3 : 1,
+                }}
               />
             )}
           </div>

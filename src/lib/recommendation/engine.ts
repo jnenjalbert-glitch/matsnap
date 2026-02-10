@@ -1,13 +1,29 @@
 import type { FaceShape } from "@/types/face";
-import type { Haircut, ScoredHaircut } from "@/types/haircut";
+import type { Haircut, HairLength, ScoredHaircut } from "@/types/haircut";
 import type { QuestionnaireAnswers } from "@/types/questionnaire";
 
 interface ScoringInput {
   faceShape: FaceShape;
   hairType: string;
+  hairLength: HairLength;
   thinning: string;
   maintenanceLevel: number;
   vibePreferences: string[];
+}
+
+const VALID_LENGTHS: HairLength[] = [
+  "very_short",
+  "short",
+  "medium",
+  "long",
+  "very_long",
+];
+
+function toHairLength(value: string | undefined): HairLength {
+  if (value && VALID_LENGTHS.includes(value as HairLength)) {
+    return value as HairLength;
+  }
+  return "medium";
 }
 
 function scoreHaircut(haircut: Haircut, input: ScoringInput): ScoredHaircut {
@@ -37,6 +53,14 @@ function scoreHaircut(haircut: Haircut, input: ScoringInput): ScoredHaircut {
     score -= 5;
   }
 
+  // Hair length compatibility (+2.5 match, -4 avoid)
+  if (haircut.lengthCompatibility.includes(input.hairLength)) {
+    score += 2.5;
+    reasons.push(`Great fit for your current hair length.`);
+  } else {
+    score -= 4;
+  }
+
   // Maintenance proximity (+0 to +1.5)
   const maintenanceDiff = Math.abs(
     haircut.maintenanceLevel - input.maintenanceLevel
@@ -54,11 +78,11 @@ function scoreHaircut(haircut: Haircut, input: ScoringInput): ScoredHaircut {
     reasons.push(`Matches your ${level}-maintenance preference.`);
   }
 
-  // Vibe overlap (+0.5 per match)
+  // Vibe overlap (+0.75 per match, up from 0.5)
   const vibeOverlap = haircut.vibeTags.filter((v) =>
     input.vibePreferences.includes(v)
   );
-  score += vibeOverlap.length * 0.5;
+  score += vibeOverlap.length * 0.75;
   if (vibeOverlap.length > 0) {
     reasons.push(`Fits your ${vibeOverlap.join(", ")} style.`);
   }
@@ -68,6 +92,10 @@ function scoreHaircut(haircut: Haircut, input: ScoringInput): ScoredHaircut {
     score += 1.5;
     reasons.push("Good option for managing hair thinning.");
   }
+
+  // Small random jitter (±0.3) to break ties and add variety
+  const jitter = (Math.random() - 0.5) * 0.6;
+  score += jitter;
 
   return {
     haircut,
@@ -80,11 +108,12 @@ export function getRecommendations(
   library: Haircut[],
   faceShape: FaceShape,
   answers: QuestionnaireAnswers,
-  topN = 5
+  topN = 6
 ): ScoredHaircut[] {
   const input: ScoringInput = {
     faceShape,
     hairType: answers.hairType,
+    hairLength: toHairLength(answers.hairLength),
     thinning: answers.thinning,
     maintenanceLevel: answers.maintenanceLevel,
     vibePreferences: answers.vibePreferences,

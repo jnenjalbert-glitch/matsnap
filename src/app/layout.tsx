@@ -1,10 +1,18 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Outfit, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const outfit = Outfit({
+  variable: "--font-outfit",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+});
+
+const instrumentSerif = Instrument_Serif({
+  variable: "--font-instrument-serif",
+  subsets: ["latin"],
+  weight: ["400"],
+  style: ["normal", "italic"],
 });
 
 export const metadata: Metadata = {
@@ -20,26 +28,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} font-sans antialiased bg-white min-h-screen`}>
-        <header className="border-b border-zinc-100">
-          <div className="mx-auto max-w-lg flex items-center justify-between px-4 py-3">
-            <a href="/" className="text-xl font-bold tracking-tight">
-              Matsnap
-            </a>
-            <nav className="flex items-center gap-4 text-sm">
-              <a href="/scan" className="text-zinc-600 hover:text-zinc-900">
-                Scan
-              </a>
-              <a
-                href="/login"
-                className="rounded-lg bg-zinc-900 px-4 py-1.5 text-white hover:bg-zinc-800 transition-colors"
-              >
-                Sign In
-              </a>
-            </nav>
-          </div>
-        </header>
-        <main>{children}</main>
+      <body
+        className={`${outfit.variable} ${instrumentSerif.variable} min-h-screen`}
+        style={{ fontFamily: "var(--font-outfit), var(--font-body)" }}
+      >
+        {children}
       </body>
     </html>
   );
